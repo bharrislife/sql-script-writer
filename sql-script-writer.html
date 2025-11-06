@@ -1,0 +1,677 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SQL Script Generator | Database Tools</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: #f5f5f5;
+            color: #1a1a1a;
+            line-height: 1.6;
+            padding: 24px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        header {
+            background: white;
+            padding: 32px;
+            border-radius: 12px;
+            margin-bottom: 32px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            font-size: 32px;
+            font-weight: 700;
+            margin-bottom: 8px;
+            color: #1a1a1a;
+        }
+
+        .subtitle {
+            font-size: 16px;
+            color: #666;
+        }
+
+        .main-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 24px;
+            margin-bottom: 24px;
+        }
+
+        .card {
+            background: white;
+            padding: 24px;
+            border-radius: 12px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+
+        .card h2 {
+            font-size: 20px;
+            font-weight: 600;
+            margin-bottom: 16px;
+            color: #1a1a1a;
+        }
+
+        .form-group {
+            margin-bottom: 24px;
+        }
+
+        label {
+            display: block;
+            font-size: 14px;
+            font-weight: 500;
+            margin-bottom: 8px;
+            color: #333;
+        }
+
+        select, input, textarea {
+            width: 100%;
+            padding: 12px 16px;
+            font-size: 16px;
+            border: 1px solid #d4d4d4;
+            border-radius: 8px;
+            background: white;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+
+        select:focus, input:focus, textarea:focus {
+            outline: none;
+            border-color: #2563eb;
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+        }
+
+        textarea {
+            min-height: 120px;
+            resize: vertical;
+            font-family: 'Courier New', monospace;
+        }
+
+        .columns-input {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 8px;
+        }
+
+        .columns-input input {
+            flex: 1;
+        }
+
+        .columns-input select {
+            flex: 1;
+        }
+
+        .columns-input button {
+            padding: 12px 16px;
+            background: #ef4444;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background 0.2s;
+        }
+
+        .columns-input button:hover {
+            background: #dc2626;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            font-size: 16px;
+            font-weight: 500;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-primary {
+            background: #2563eb;
+            color: white;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+
+        .btn-primary:hover {
+            background: #1d4ed8;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
+        }
+
+        .btn-secondary {
+            background: white;
+            color: #2563eb;
+            border: 1px solid #2563eb;
+        }
+
+        .btn-secondary:hover {
+            background: #eff6ff;
+        }
+
+        .btn-add {
+            background: #10b981;
+            color: white;
+            width: 100%;
+            margin-top: 8px;
+        }
+
+        .btn-add:hover {
+            background: #059669;
+        }
+
+        .output-section {
+            background: white;
+            padding: 24px;
+            border-radius: 12px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+
+        .output-section h2 {
+            font-size: 20px;
+            font-weight: 600;
+            margin-bottom: 16px;
+        }
+
+        #sqlOutput {
+            background: #1e1e1e;
+            color: #d4d4d4;
+            padding: 24px;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            line-height: 1.6;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            min-height: 200px;
+            max-height: 500px;
+            overflow-y: auto;
+        }
+
+        .sql-keyword {
+            color: #569cd6;
+        }
+
+        .sql-string {
+            color: #ce9178;
+        }
+
+        .sql-comment {
+            color: #6a9955;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 16px;
+            margin-top: 16px;
+        }
+
+        .column-list {
+            margin-top: 8px;
+        }
+
+        .column-item {
+            padding: 8px;
+            background: #f9fafb;
+            border-radius: 6px;
+            margin-bottom: 8px;
+            font-size: 14px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .column-item span {
+            font-family: 'Courier New', monospace;
+        }
+
+        .database-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            background: #eff6ff;
+            color: #2563eb;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 500;
+            margin-top: 16px;
+        }
+
+        .templates {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+            margin-top: 16px;
+        }
+
+        .template-btn {
+            padding: 16px;
+            background: #f9fafb;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-align: center;
+        }
+
+        .template-btn:hover {
+            background: #eff6ff;
+            border-color: #2563eb;
+        }
+
+        .template-btn h3 {
+            font-size: 16px;
+            margin-bottom: 4px;
+        }
+
+        .template-btn p {
+            font-size: 12px;
+            color: #666;
+        }
+
+        @media (max-width: 768px) {
+            .main-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .action-buttons {
+                flex-direction: column;
+            }
+
+            .btn {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>SQL Script Generator</h1>
+            <p class="subtitle">Generate production-ready SQL scripts with best practices built-in</p>
+            <div class="database-badge">PostgreSQL / MySQL / SQL Server Compatible</div>
+        </header>
+
+        <div class="main-grid">
+            <div class="card">
+                <h2>Script Configuration</h2>
+                
+                <div class="form-group">
+                    <label for="scriptType">Script Type</label>
+                    <select id="scriptType">
+                        <option value="create_table">Create Table</option>
+                        <option value="insert">Insert Data</option>
+                        <option value="select">Select Query</option>
+                        <option value="update">Update Data</option>
+                        <option value="delete">Delete Data</option>
+                        <option value="alter_table">Alter Table</option>
+                        <option value="create_index">Create Index</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="tableName">Table Name</label>
+                    <input type="text" id="tableName" placeholder="users">
+                </div>
+
+                <div class="form-group" id="columnsSection">
+                    <label>Columns</label>
+                    <div id="columnsList" class="column-list"></div>
+                    <div class="columns-input">
+                        <input type="text" id="columnName" placeholder="Column name">
+                        <select id="columnType">
+                            <option value="VARCHAR(255)">VARCHAR(255)</option>
+                            <option value="INT">INT</option>
+                            <option value="BIGINT">BIGINT</option>
+                            <option value="TEXT">TEXT</option>
+                            <option value="BOOLEAN">BOOLEAN</option>
+                            <option value="DATE">DATE</option>
+                            <option value="TIMESTAMP">TIMESTAMP</option>
+                            <option value="DECIMAL(10,2)">DECIMAL(10,2)</option>
+                            <option value="UUID">UUID</option>
+                        </select>
+                    </div>
+                    <button class="btn btn-add" onclick="addColumn()">+ Add Column</button>
+                </div>
+
+                <div class="form-group" id="conditionSection" style="display: none;">
+                    <label for="whereCondition">WHERE Condition</label>
+                    <input type="text" id="whereCondition" placeholder="id = 1">
+                </div>
+
+                <div class="form-group" id="dataSection" style="display: none;">
+                    <label for="dataValues">Data Values (JSON format)</label>
+                    <textarea id="dataValues" placeholder='{"name": "John", "email": "john@example.com"}'></textarea>
+                </div>
+            </div>
+
+            <div class="card">
+                <h2>Quick Templates</h2>
+                <div class="templates">
+                    <div class="template-btn" onclick="loadTemplate('users')">
+                        <h3>👤 Users Table</h3>
+                        <p>Standard user table</p>
+                    </div>
+                    <div class="template-btn" onclick="loadTemplate('products')">
+                        <h3>📦 Products Table</h3>
+                        <p>E-commerce products</p>
+                    </div>
+                    <div class="template-btn" onclick="loadTemplate('orders')">
+                        <h3>🛒 Orders Table</h3>
+                        <p>Order management</p>
+                    </div>
+                    <div class="template-btn" onclick="loadTemplate('audit')">
+                        <h3>📋 Audit Log</h3>
+                        <p>Activity tracking</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="output-section">
+            <h2>Generated SQL Script</h2>
+            <div id="sqlOutput">-- Your SQL script will appear here
+-- Configure the options above and click Generate</div>
+            <div class="action-buttons">
+                <button class="btn btn-primary" onclick="generateSQL()">Generate SQL</button>
+                <button class="btn btn-secondary" onclick="copyToClipboard()">Copy to Clipboard</button>
+                <button class="btn btn-secondary" onclick="downloadSQL()">Download Script</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let columns = [];
+
+        // Update UI based on script type
+        document.getElementById('scriptType').addEventListener('change', function() {
+            const type = this.value;
+            document.getElementById('columnsSection').style.display = 
+                (type === 'create_table' || type === 'alter_table') ? 'block' : 'none';
+            document.getElementById('conditionSection').style.display = 
+                (type === 'select' || type === 'update' || type === 'delete') ? 'block' : 'none';
+            document.getElementById('dataSection').style.display = 
+                (type === 'insert' || type === 'update') ? 'block' : 'none';
+        });
+
+        function addColumn() {
+            const name = document.getElementById('columnName').value.trim();
+            const type = document.getElementById('columnType').value;
+            
+            if (!name) {
+                alert('Please enter a column name');
+                return;
+            }
+
+            columns.push({ name, type });
+            updateColumnsList();
+            
+            document.getElementById('columnName').value = '';
+        }
+
+        function removeColumn(index) {
+            columns.splice(index, 1);
+            updateColumnsList();
+        }
+
+        function updateColumnsList() {
+            const list = document.getElementById('columnsList');
+            list.innerHTML = columns.map((col, index) => `
+                <div class="column-item">
+                    <span>${col.name} (${col.type})</span>
+                    <button onclick="removeColumn(${index})" style="background: none; border: none; color: #ef4444; cursor: pointer; font-size: 18px;">×</button>
+                </div>
+            `).join('');
+        }
+
+        function generateSQL() {
+            const scriptType = document.getElementById('scriptType').value;
+            const tableName = document.getElementById('tableName').value.trim();
+            
+            if (!tableName) {
+                alert('Please enter a table name');
+                return;
+            }
+
+            let sql = '';
+
+            switch(scriptType) {
+                case 'create_table':
+                    sql = generateCreateTable(tableName, columns);
+                    break;
+                case 'insert':
+                    sql = generateInsert(tableName);
+                    break;
+                case 'select':
+                    sql = generateSelect(tableName);
+                    break;
+                case 'update':
+                    sql = generateUpdate(tableName);
+                    break;
+                case 'delete':
+                    sql = generateDelete(tableName);
+                    break;
+                case 'alter_table':
+                    sql = generateAlterTable(tableName, columns);
+                    break;
+                case 'create_index':
+                    sql = generateCreateIndex(tableName);
+                    break;
+            }
+
+            document.getElementById('sqlOutput').textContent = sql;
+        }
+
+        function generateCreateTable(tableName, columns) {
+            if (columns.length === 0) {
+                return '-- Please add at least one column';
+            }
+
+            let sql = `-- Create table: ${tableName}\n`;
+            sql += `-- Generated: ${new Date().toISOString()}\n\n`;
+            sql += `CREATE TABLE ${tableName} (\n`;
+            sql += `    id SERIAL PRIMARY KEY,\n`;
+            
+            columns.forEach((col, index) => {
+                sql += `    ${col.name} ${col.type}`;
+                if (index < columns.length - 1) sql += ',';
+                sql += '\n';
+            });
+            
+            sql += `    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,\n`;
+            sql += `    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP\n`;
+            sql += `);\n\n`;
+            sql += `-- Create indexes for better query performance\n`;
+            sql += `CREATE INDEX idx_${tableName}_created_at ON ${tableName}(created_at);\n`;
+            
+            return sql;
+        }
+
+        function generateInsert(tableName) {
+            const dataStr = document.getElementById('dataValues').value.trim();
+            
+            if (!dataStr) {
+                return `-- Insert sample data into ${tableName}\nINSERT INTO ${tableName} (column1, column2, column3)\nVALUES ('value1', 'value2', 'value3');`;
+            }
+
+            try {
+                const data = JSON.parse(dataStr);
+                const cols = Object.keys(data).join(', ');
+                const vals = Object.values(data).map(v => 
+                    typeof v === 'string' ? `'${v}'` : v
+                ).join(', ');
+                
+                return `-- Insert data into ${tableName}\nINSERT INTO ${tableName} (${cols})\nVALUES (${vals});`;
+            } catch(e) {
+                return '-- Invalid JSON format. Example: {"name": "John", "age": 30}';
+            }
+        }
+
+        function generateSelect(tableName) {
+            const condition = document.getElementById('whereCondition').value.trim();
+            let sql = `-- Select data from ${tableName}\n`;
+            sql += `SELECT * FROM ${tableName}`;
+            if (condition) {
+                sql += `\nWHERE ${condition}`;
+            }
+            sql += `\nORDER BY created_at DESC\nLIMIT 100;`;
+            return sql;
+        }
+
+        function generateUpdate(tableName) {
+            const condition = document.getElementById('whereCondition').value.trim();
+            const dataStr = document.getElementById('dataValues').value.trim();
+            
+            let sql = `-- Update data in ${tableName}\n`;
+            sql += `UPDATE ${tableName}\nSET `;
+            
+            if (dataStr) {
+                try {
+                    const data = JSON.parse(dataStr);
+                    const sets = Object.entries(data).map(([k, v]) => 
+                        `${k} = ${typeof v === 'string' ? `'${v}'` : v}`
+                    ).join(',\n    ');
+                    sql += sets;
+                } catch(e) {
+                    sql += 'column1 = value1,\n    column2 = value2';
+                }
+            } else {
+                sql += 'column1 = value1,\n    column2 = value2';
+            }
+            
+            sql += ',\n    updated_at = CURRENT_TIMESTAMP';
+            if (condition) {
+                sql += `\nWHERE ${condition};`;
+            } else {
+                sql += '\nWHERE id = ?;';
+            }
+            
+            return sql;
+        }
+
+        function generateDelete(tableName) {
+            const condition = document.getElementById('whereCondition').value.trim();
+            let sql = `-- Delete data from ${tableName}\n`;
+            sql += `-- WARNING: Always backup data before deleting!\n\n`;
+            sql += `DELETE FROM ${tableName}`;
+            if (condition) {
+                sql += `\nWHERE ${condition};`;
+            } else {
+                sql += '\nWHERE id = ?;';
+            }
+            return sql;
+        }
+
+        function generateAlterTable(tableName, columns) {
+            if (columns.length === 0) {
+                return '-- Please add at least one column to add';
+            }
+
+            let sql = `-- Alter table: ${tableName}\n`;
+            columns.forEach(col => {
+                sql += `ALTER TABLE ${tableName}\nADD COLUMN ${col.name} ${col.type};\n\n`;
+            });
+            return sql;
+        }
+
+        function generateCreateIndex(tableName) {
+            return `-- Create index on ${tableName}\n` +
+                   `CREATE INDEX idx_${tableName}_column_name\n` +
+                   `ON ${tableName}(column_name);\n\n` +
+                   `-- For composite index:\n` +
+                   `-- CREATE INDEX idx_${tableName}_col1_col2\n` +
+                   `-- ON ${tableName}(column1, column2);`;
+        }
+
+        function loadTemplate(template) {
+            columns = [];
+            document.getElementById('scriptType').value = 'create_table';
+            
+            switch(template) {
+                case 'users':
+                    document.getElementById('tableName').value = 'users';
+                    columns = [
+                        { name: 'email', type: 'VARCHAR(255)' },
+                        { name: 'username', type: 'VARCHAR(100)' },
+                        { name: 'password_hash', type: 'VARCHAR(255)' },
+                        { name: 'first_name', type: 'VARCHAR(100)' },
+                        { name: 'last_name', type: 'VARCHAR(100)' },
+                        { name: 'is_active', type: 'BOOLEAN' }
+                    ];
+                    break;
+                case 'products':
+                    document.getElementById('tableName').value = 'products';
+                    columns = [
+                        { name: 'name', type: 'VARCHAR(255)' },
+                        { name: 'description', type: 'TEXT' },
+                        { name: 'price', type: 'DECIMAL(10,2)' },
+                        { name: 'sku', type: 'VARCHAR(100)' },
+                        { name: 'stock_quantity', type: 'INT' },
+                        { name: 'is_available', type: 'BOOLEAN' }
+                    ];
+                    break;
+                case 'orders':
+                    document.getElementById('tableName').value = 'orders';
+                    columns = [
+                        { name: 'user_id', type: 'BIGINT' },
+                        { name: 'order_number', type: 'VARCHAR(50)' },
+                        { name: 'total_amount', type: 'DECIMAL(10,2)' },
+                        { name: 'status', type: 'VARCHAR(50)' },
+                        { name: 'shipping_address', type: 'TEXT' },
+                        { name: 'payment_method', type: 'VARCHAR(50)' }
+                    ];
+                    break;
+                case 'audit':
+                    document.getElementById('tableName').value = 'audit_log';
+                    columns = [
+                        { name: 'user_id', type: 'BIGINT' },
+                        { name: 'action', type: 'VARCHAR(100)' },
+                        { name: 'table_name', type: 'VARCHAR(100)' },
+                        { name: 'record_id', type: 'BIGINT' },
+                        { name: 'old_values', type: 'TEXT' },
+                        { name: 'new_values', type: 'TEXT' },
+                        { name: 'ip_address', type: 'VARCHAR(45)' }
+                    ];
+                    break;
+            }
+            
+            updateColumnsList();
+            document.getElementById('columnsSection').style.display = 'block';
+        }
+
+        function copyToClipboard() {
+            const sql = document.getElementById('sqlOutput').textContent;
+            navigator.clipboard.writeText(sql).then(() => {
+                alert('SQL copied to clipboard!');
+            });
+        }
+
+        function downloadSQL() {
+            const sql = document.getElementById('sqlOutput').textContent;
+            const tableName = document.getElementById('tableName').value || 'script';
+            const blob = new Blob([sql], { type: 'text/plain' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `${tableName}.sql`;
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+
+        // Load a default template on page load
+        window.addEventListener('load', () => {
+            loadTemplate('users');
+            generateSQL();
+        });
+    </script>
+</body>
+</html>
